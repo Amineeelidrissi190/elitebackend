@@ -1,0 +1,81 @@
+<?php
+
+use App\Models\reservation;
+use Illuminate\Http\Request;
+use App\Http\Middleware\Checkjwt;
+use App\Http\Middleware\CheckRole;
+use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\AuthController;
+use App\Http\Controllers\usercontroller;
+use App\Http\Controllers\admincontroller;
+use App\Http\Controllers\coachcontroller;
+use App\Http\Controllers\eventcontroller;
+use App\Http\Controllers\Logincontroller;
+use App\Http\Controllers\clientcontroller;
+use App\Http\Controllers\emploicontroller;
+use App\Http\Controllers\offrescontroller;
+use App\Http\Controllers\produitcontroller;
+use App\Http\Controllers\commandecontroller;
+use App\Http\Controllers\controllerspecialite;
+use App\Http\Controllers\reservationcontroller;
+use App\Http\Controllers\inscription_offrecontroller;
+use App\Http\Controllers\personal_trainiescontroller;
+use App\Http\Controllers\inscription_event_controller;
+
+Route::apiResource('/client', clientcontroller::class);
+Route::apiResource('/emploi', emploicontroller::class);
+Route::get('/event', [eventcontroller::class, 'index']);
+Route::get('/event/{id}', [eventcontroller::class, 'show']);
+Route::get('/coach', [coachcontroller::class, 'index']);
+Route::get('/admin', [admincontroller::class, 'index']);
+Route::get('/inscription_eventcr', [inscription_event_controller::class,'CreatedDates']);
+Route::get('/offres', [offrescontroller::class, 'index']);
+Route::get('/offres/{id}', [offrescontroller::class, 'show']);
+Route::get('/specialite/{id}', [controllerspecialite::class, 'show'])->name('specialite.show');
+Route::get('/specialite', [controllerspecialite::class, 'index']);
+Route::get('/produit', [produitcontroller::class, 'index']);
+Route::get('/produit/{id}', [produitcontroller::class, 'show']);
+Route::get('/personal_trainies', [personal_trainiescontroller::class, 'index']);
+Route::get('/personal_trainies/{id}', [personal_trainiescontroller::class, 'show']);
+Route::post('/reservationcontroller', [reservationcontroller::class, 'store']);
+Route::post('/inscription_event', [inscription_event_controller::class, 'store']);
+Route::post('/commandecontroller', [commandecontroller::class, 'store']);
+Route::get('/Lastscommand', [commandecontroller::class, 'LastCommands']);
+Route::get('/Chatcommand', [commandecontroller::class, 'Chatcommand']);
+Route::get('/Total', [commandecontroller::class, 'Total']);
+Route::post('/inscription_offrecontroller', [inscription_offrecontroller::class, 'store']);
+Route::post('/login', [AuthController::class, 'login'])->name('login');
+Route::post('/register', [AuthController::class, 'register'])->name('register');
+Route::post('/store-client', [AuthController::class, 'storeClient']);
+Route::post('/store-admin', [AuthController::class, 'storeAdmin']);
+Route::post('/store-coach', [AuthController::class, 'storeCoach']);
+Route::middleware([Checkjwt::class])->group(function () {
+    Route::post('auth/logout', [AuthController::class, 'logout'])->name("auth.logout");
+    Route::post('auth/refresh', [AuthController::class, 'refresh']);
+    Route::post('auth/me', [AuthController::class, 'me']);
+    Route::PATCH('/updateprofilAdmin/{id}', [AuthController::class, 'UpdateProfil']);
+    Route::middleware([CheckRole::class . ':admin'])->group(function () {
+        Route::apiResource('/admin', admincontroller::class)->except(['index']);
+        Route::apiResource('/inscription_offrecontroller', inscription_offrecontroller::class)->except(['store']);
+        Route::get('/TotalinsOffres', [inscription_offrecontroller::class,"TotalOffres"]);
+        Route::get('/ChartinsOffers', [inscription_offrecontroller::class,"ChartinsOffers"]);
+        Route::get('/LastsOffers', [inscription_offrecontroller::class,"LastsOffers"]);
+        Route::apiResource('/produit', produitcontroller::class)->except(['index','show']);
+        Route::apiResource('/personal_trainies', personal_trainiescontroller::class)->except(['index','show']);
+        Route::apiResource('/specialite', controllerspecialite::class)->except(['show', 'index']);
+        Route::get('/connected-users', [AuthController::class, 'getConnectedUsers']);
+        Route::apiResource('/offres', offrescontroller::class)->except(['index','show']);
+        Route::apiResource('/event', eventcontroller::class)->except(['index','show']);
+        Route::apiResource('/coach', coachcontroller::class)->except(['index']);
+        Route::apiResource('/reservationcontroller', reservationcontroller::class)->except(['store']);
+        Route::apiResource('/inscription_event', inscription_event_controller::class)->except(['store']);
+        Route::get('/inscription_eventhome', [inscription_event_controller::class,'LastsEvents']);
+        Route::get('/inscription_eventcount', [inscription_event_controller::class,'CountLists']);
+        Route::get('/TrainiesCount', [reservationcontroller::class,'TrainiesCount']);
+        Route::get('/Chartreservation', [reservationcontroller::class,'Chartreservation']);
+        Route::get('/LastReservations', [reservationcontroller::class,'LastReservations']);
+        Route::apiResource('/commandecontroller', commandecontroller::class)->except(['store']);
+    });
+});
+
+
